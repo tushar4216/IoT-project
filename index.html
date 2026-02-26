@@ -50,6 +50,7 @@
             border-radius: 25px;
             background: #f0f0f0;
             margin-top: 15px;
+            margin-bottom: 20px;
         }
 
         .status-dot {
@@ -70,13 +71,91 @@
             50% { opacity: 0.5; }
         }
 
-        /* Growth Stage Controls */
+        /* Sowing Date Section */
+        .sowing-date-section {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #dee2e6;
+        }
+
+        .date-input-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .date-input-container label {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #495057;
+        }
+
+        .date-input {
+            padding: 12px 20px;
+            border: 2px solid #ced4da;
+            border-radius: 10px;
+            font-size: 1em;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            color: #495057;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .das-display {
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .das-info {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .das-label {
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 0.95em;
+        }
+
+        .das-value {
+            font-weight: 800;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .das-count {
+            font-size: 2em;
+            color: #28a745;
+        }
+
+        /* Growth Stage Controls - Hidden when using real DAS */
         .stage-controls {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
             padding: 30px;
             margin-bottom: 30px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .stage-controls.hidden {
+            display: none;
         }
 
         .stage-controls h2 {
@@ -176,7 +255,7 @@
         /* Growth Stages Timeline */
         .stages-timeline {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin-top: 20px;
         }
@@ -443,9 +522,19 @@
             color: white;
         }
 
+        .btn-success:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
         .btn-danger {
             background: #f44336;
             color: white;
+        }
+
+        .btn-danger:hover {
+            background: #da190b;
+            transform: scale(1.05);
         }
 
         .relay-control {
@@ -639,6 +728,15 @@
             .relay-btn {
                 width: 100%;
             }
+
+            .date-input-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .date-input {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -652,6 +750,27 @@
                 <span class="status-dot" id="statusDot"></span>
                 <span id="statusText">Connecting to HiveMQ...</span>
             </div>
+            
+            <!-- Sowing Date Section -->
+            <div class="sowing-date-section">
+                <div class="date-input-container" id="dateInputContainer">
+                    <label for="sowingDate">🌾 Sowing Date:</label>
+                    <input type="date" id="sowingDate" class="date-input">
+                    <button class="btn btn-primary" onclick="setSowingDate()">Set Date</button>
+                    <button class="btn btn-danger" onclick="resetSowingDate()" id="resetBtn" style="display: none;">Reset</button>
+                </div>
+                <div class="das-display" id="dasDisplay" style="display: none;">
+                    <div class="das-info">
+                        <span class="das-label">📅 Sowing Date:</span>
+                        <span class="das-value" id="displaySowingDate">--</span>
+                    </div>
+                    <div class="das-info">
+                        <span class="das-label">⏱️ Days After Sowing (DAS):</span>
+                        <span class="das-value das-count" id="dasCount">0</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="stats-grid">
                 <div class="stat-box">
                     <div class="stat-label">Messages Received</div>
@@ -672,41 +791,20 @@
             </div>
         </div>
 
-        <!-- Growth Stage Controls -->
-        <div class="stage-controls">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
-                <div>
-                    <h2>🌾 Growth Stage Management</h2>
-                    <p style="color: #666;">Automated irrigation based on crop growth stages</p>
-                </div>
-                <div class="day-display">
-                    <div class="label">Current Day</div>
-                    <div class="current-day" id="currentDayDisplay">1</div>
-                    <div class="total-days">of 120 days</div>
-                </div>
-            </div>
-
-            <div class="day-slider-container">
-                <button class="day-btn minus" onclick="changeDay(-1)">-1 Day</button>
-                <input type="range" min="1" max="120" value="1" class="day-slider" id="daySlider" oninput="updateDay(this.value)">
-                <button class="day-btn plus" onclick="changeDay(1)">+1 Day</button>
-            </div>
-
-            <div class="stages-timeline" id="stagesTimeline"></div>
-        </div>
-
-        <!-- Current Status -->
+        <!-- Growth Stage Timeline -->
         <div class="current-status-card">
-            <h2>📊 Current Status</h2>
+            <h2>🌾 Current Growth Stage</h2>
             <div class="active-stage-banner" id="activeStageBanner">
                 <div style="display: flex; align-items: center; gap: 15px;">
                     <div style="font-size: 2.5em;" id="activeStageIcon">🌱</div>
                     <div>
-                        <div class="active-stage-title" id="activeStageName">Initial Growth Stage</div>
-                        <div class="active-stage-desc" id="activeStageDesc">Seed germination and early root development</div>
+                        <div class="active-stage-title" id="activeStageName">Set Sowing Date to Begin</div>
+                        <div class="active-stage-desc" id="activeStageDesc">Please set your sowing date above to enable automatic growth stage tracking</div>
                     </div>
                 </div>
             </div>
+
+            <div class="stages-timeline" id="stagesTimeline"></div>
 
             <div class="moisture-indicator">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -717,8 +815,8 @@
                     <div class="moisture-bar" id="moistureBar" style="width: 0%; background: #4CAF50;"></div>
                 </div>
                 <div class="moisture-status">
-                    <span class="target">Target: <span id="targetRange">80-90%</span></span>
-                    <span class="status" id="moistureStatus">⚠ Calculating...</span>
+                    <span class="target">Target: <span id="targetRange">--</span></span>
+                    <span class="status" id="moistureStatus">⚠ Waiting for data...</span>
                 </div>
             </div>
         </div>
@@ -815,7 +913,7 @@
                 <thead>
                     <tr>
                         <th>Stage</th>
-                        <th>Days</th>
+                        <th>Days After Sowing</th>
                         <th>Optimal Moisture</th>
                         <th>Description</th>
                     </tr>
@@ -837,13 +935,13 @@
             connectTimeout: 10000
         };
 
-        // Growth Stages Configuration
+        // Growth Stages Configuration - Updated with correct DAS ranges
         const GROWTH_STAGES = [
             {
                 name: 'Initial Growth',
                 icon: '🌱',
                 moistureRange: [80, 90],
-                days: [1, 15],
+                days: [0, 20],
                 color: '#4ade80',
                 bgColor: '#dcfce7',
                 description: 'Seed germination and early root development'
@@ -852,7 +950,7 @@
                 name: 'Vegetative',
                 icon: '📈',
                 moistureRange: [70, 80],
-                days: [16, 45],
+                days: [21, 55],
                 color: '#22c55e',
                 bgColor: '#d1fae5',
                 description: 'Rapid leaf and stem growth'
@@ -861,7 +959,7 @@
                 name: 'Flowering',
                 icon: '🌸',
                 moistureRange: [85, 95],
-                days: [46, 80],
+                days: [56, 70],
                 color: '#ec4899',
                 bgColor: '#fce7f3',
                 description: 'Flower development and pollination'
@@ -870,7 +968,7 @@
                 name: 'Grain Filling',
                 icon: '🌾',
                 moistureRange: [75, 85],
-                days: [81, 105],
+                days: [71, 95],
                 color: '#f59e0b',
                 bgColor: '#fef3c7',
                 description: 'Grain development and weight gain'
@@ -879,7 +977,7 @@
                 name: 'Maturity',
                 icon: '💧',
                 moistureRange: [60, 70],
-                days: [106, 120],
+                days: [96, 120],
                 color: '#eab308',
                 bgColor: '#fef9c3',
                 description: 'Ripening and harvest preparation'
@@ -888,15 +986,17 @@
 
         let client;
         let relayState = false;
-        let autoMode = true;
+        let autoMode = true; // Will be loaded from localStorage
         let sensorData = [];
         let chart;
         let messageCount = 0;
         let irrigationCount = 0;
         let startTime = Date.now();
-        let currentDay = 1;
+        let currentDAS = 0;
         let currentStageIndex = 0;
         let soilMoistureValues = { soil1: 0, soil2: 0, soil3: 0, soil4: 0 };
+        let sowingDate = null;
+        let dasUpdateInterval = null;
 
         // Initialize chart
         const ctx = document.getElementById('sensorChart').getContext('2d');
@@ -959,23 +1059,180 @@
             }
         });
 
+        // LocalStorage functions
+        function setSowingDate() {
+            const dateInput = document.getElementById('sowingDate');
+            const selectedDate = dateInput.value;
+            
+            if (!selectedDate) {
+                alert('Please select a sowing date');
+                return;
+            }
+
+            // Validate date is not in future
+            const selected = new Date(selectedDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (selected > today) {
+                alert('Sowing date cannot be in the future');
+                return;
+            }
+
+            // Save to localStorage
+            localStorage.setItem('sowingDate', selectedDate);
+            sowingDate = selectedDate;
+            
+            addLog(`Sowing date set: ${formatDate(selectedDate)}`, 'success');
+            
+            // Update UI
+            updateDASDisplay();
+            
+            // Hide input, show display
+            document.getElementById('dateInputContainer').style.display = 'none';
+            document.getElementById('dasDisplay').style.display = 'grid';
+            document.getElementById('resetBtn').style.display = 'inline-block';
+            
+            // Start DAS update interval
+            startDASUpdates();
+        }
+
+        function resetSowingDate() {
+            if (confirm('Are you sure you want to reset the sowing date? This will clear all growth stage tracking.')) {
+                localStorage.removeItem('sowingDate');
+                sowingDate = null;
+                currentDAS = 0;
+                
+                // Clear interval
+                if (dasUpdateInterval) {
+                    clearInterval(dasUpdateInterval);
+                    dasUpdateInterval = null;
+                }
+                
+                // Show input, hide display
+                document.getElementById('dateInputContainer').style.display = 'flex';
+                document.getElementById('dasDisplay').style.display = 'none';
+                document.getElementById('resetBtn').style.display = 'none';
+                document.getElementById('sowingDate').value = '';
+                
+                // Reset stage display
+                document.getElementById('activeStageName').textContent = 'Set Sowing Date to Begin';
+                document.getElementById('activeStageDesc').textContent = 'Please set your sowing date above to enable automatic growth stage tracking';
+                document.getElementById('targetRange').textContent = '--';
+                
+                renderStagesTimeline();
+                renderRequirementsTable();
+                
+                addLog('Sowing date reset', 'warning');
+            }
+        }
+
+        function loadSowingDate() {
+            const savedDate = localStorage.getItem('sowingDate');
+            if (savedDate) {
+                sowingDate = savedDate;
+                document.getElementById('sowingDate').value = savedDate;
+                document.getElementById('dateInputContainer').style.display = 'none';
+                document.getElementById('dasDisplay').style.display = 'grid';
+                document.getElementById('resetBtn').style.display = 'inline-block';
+                
+                updateDASDisplay();
+                startDASUpdates();
+                
+                addLog('Sowing date loaded from storage', 'info');
+            }
+        }
+
+        function loadAutoMode() {
+            const savedMode = localStorage.getItem('autoMode');
+            if (savedMode !== null) {
+                autoMode = savedMode === 'true';
+            } else {
+                // Default to AUTO mode if not set
+                autoMode = true;
+                localStorage.setItem('autoMode', 'true');
+            }
+            
+            // Update UI to reflect loaded mode
+            const btn = document.getElementById('modeToggle');
+            if (autoMode) {
+                btn.className = 'mode-toggle auto';
+                btn.textContent = '🤖 AUTO MODE';
+            } else {
+                btn.className = 'mode-toggle manual';
+                btn.textContent = '👤 MANUAL MODE';
+            }
+            
+            addLog(`Mode loaded: ${autoMode ? 'AUTO' : 'MANUAL'}`, 'info');
+        }
+
+        function calculateDAS() {
+            if (!sowingDate) return 0;
+            
+            const sowing = new Date(sowingDate);
+            const today = new Date();
+            
+            // Reset time to compare only dates
+            sowing.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            
+            const diffTime = today - sowing;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            return Math.max(0, diffDays);
+        }
+
+        function updateDASDisplay() {
+            currentDAS = calculateDAS();
+            
+            document.getElementById('dasCount').textContent = currentDAS;
+            document.getElementById('displaySowingDate').textContent = formatDate(sowingDate);
+            
+            // Update current stage
+            const newStage = determineStage(currentDAS);
+            if (newStage !== currentStageIndex) {
+                currentStageIndex = newStage;
+                addLog(`Growth stage changed to: ${GROWTH_STAGES[currentStageIndex].name} (DAS: ${currentDAS})`, 'warning');
+            }
+            
+            updateCurrentStage();
+        }
+
+        function startDASUpdates() {
+            // Update immediately
+            updateDASDisplay();
+            
+            // Update every hour (3600000 ms)
+            if (dasUpdateInterval) {
+                clearInterval(dasUpdateInterval);
+            }
+            dasUpdateInterval = setInterval(updateDASDisplay, 3600000);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        }
+
         // Initialize UI
         function initializeUI() {
             renderStagesTimeline();
             renderRequirementsTable();
-            updateCurrentStage();
+            loadAutoMode();
+            loadSowingDate();
         }
 
         function renderStagesTimeline() {
             const timeline = document.getElementById('stagesTimeline');
             timeline.innerHTML = GROWTH_STAGES.map((stage, index) => `
-                <div class="stage-card ${index === currentStageIndex ? 'active' : 'inactive'}" 
+                <div class="stage-card ${index === currentStageIndex && sowingDate ? 'active' : 'inactive'}" 
                      id="stageCard${index}"
-                     style="background: ${index === currentStageIndex ? stage.color : '#f3f4f6'}; color: ${index === currentStageIndex ? 'white' : '#666'};">
+                     style="background: ${index === currentStageIndex && sowingDate ? stage.color : '#f3f4f6'}; color: ${index === currentStageIndex && sowingDate ? 'white' : '#666'};">
                     <div class="stage-icon">${stage.icon}</div>
                     <div class="stage-name">${stage.name}</div>
-                    <div class="stage-days">Days ${stage.days[0]}-${stage.days[1]}</div>
-                    <div class="stage-moisture" style="background: ${index === currentStageIndex ? 'rgba(255,255,255,0.3)' : stage.bgColor}; color: ${index === currentStageIndex ? 'white' : stage.color};">
+                    <div class="stage-days">DAS ${stage.days[0]}-${stage.days[1]}</div>
+                    <div class="stage-moisture" style="background: ${index === currentStageIndex && sowingDate ? 'rgba(255,255,255,0.3)' : stage.bgColor}; color: ${index === currentStageIndex && sowingDate ? 'white' : stage.color};">
                         ${stage.moistureRange[0]}-${stage.moistureRange[1]}%
                     </div>
                 </div>
@@ -985,14 +1242,14 @@
         function renderRequirementsTable() {
             const tbody = document.getElementById('requirementsTableBody');
             tbody.innerHTML = GROWTH_STAGES.map((stage, index) => `
-                <tr class="${index === currentStageIndex ? 'active-row' : ''}" id="tableRow${index}">
+                <tr class="${index === currentStageIndex && sowingDate ? 'active-row' : ''}" id="tableRow${index}">
                     <td>
                         <div class="table-stage-icon">
                             <span>${stage.icon}</span>
                             <span>${stage.name}</span>
                         </div>
                     </td>
-                    <td>${stage.days[0]}-${stage.days[1]}</td>
+                    <td>${stage.days[0]}-${stage.days[1]} DAS</td>
                     <td>
                         <span class="table-moisture-badge">
                             ${stage.moistureRange[0]}-${stage.moistureRange[1]}%
@@ -1003,43 +1260,26 @@
             `).join('');
         }
 
-        function determineStage(day) {
+        function determineStage(das) {
             for (let i = 0; i < GROWTH_STAGES.length; i++) {
-                if (day >= GROWTH_STAGES[i].days[0] && day <= GROWTH_STAGES[i].days[1]) {
+                if (das >= GROWTH_STAGES[i].days[0] && das <= GROWTH_STAGES[i].days[1]) {
                     return i;
                 }
             }
-            return 4;
-        }
-
-        function updateDay(day) {
-            currentDay = parseInt(day);
-            document.getElementById('currentDayDisplay').textContent = currentDay;
-            document.getElementById('daySlider').value = currentDay;
-            
-            const newStage = determineStage(currentDay);
-            if (newStage !== currentStageIndex) {
-                currentStageIndex = newStage;
-                addLog(`Growth stage changed to: ${GROWTH_STAGES[currentStageIndex].name}`, 'warning');
-                updateCurrentStage();
-            }
-        }
-
-        function changeDay(delta) {
-            const newDay = Math.max(1, Math.min(120, currentDay + delta));
-            updateDay(newDay);
+            // If beyond last stage, return last stage
+            return GROWTH_STAGES.length - 1;
         }
 
         function updateCurrentStage() {
+            if (!sowingDate) return;
+            
             const stage = GROWTH_STAGES[currentStageIndex];
             
             // Update timeline
             renderStagesTimeline();
             
             // Update table
-            document.querySelectorAll('#requirementsTableBody tr').forEach((row, index) => {
-                row.className = index === currentStageIndex ? 'active-row' : '';
-            });
+            renderRequirementsTable();
             
             // Update active stage banner
             const banner = document.getElementById('activeStageBanner');
@@ -1047,7 +1287,7 @@
             banner.style.borderLeftColor = stage.color;
             document.getElementById('activeStageIcon').textContent = stage.icon;
             document.getElementById('activeStageName').textContent = stage.name + ' Stage';
-            document.getElementById('activeStageDesc').textContent = stage.description;
+            document.getElementById('activeStageDesc').textContent = `${stage.description} (Day ${currentDAS} of crop cycle)`;
             document.getElementById('targetRange').textContent = `${stage.moistureRange[0]}-${stage.moistureRange[1]}%`;
             
             // Check if irrigation needed
@@ -1065,6 +1305,8 @@
             if (avgMoisture === 0) return;
 
             document.getElementById('avgMoisture').textContent = avgMoisture.toFixed(1) + '%';
+            
+            if (!sowingDate) return;
             
             const stage = GROWTH_STAGES[currentStageIndex];
             const [minMoisture, maxMoisture] = stage.moistureRange;
@@ -1100,7 +1342,7 @@
         }
 
         function checkIrrigationNeeded() {
-            if (!autoMode) return;
+            if (!autoMode || !sowingDate) return;
 
             const avgMoisture = calculateAverageMoisture();
             if (avgMoisture === 0) return;
@@ -1111,7 +1353,7 @@
             const targetMoisture = (minMoisture + maxMoisture) / 2;
 
             if (avgMoisture < threshold && !relayState) {
-                controlValve(true, `Moisture ${avgMoisture.toFixed(1)}% < ${threshold}% (Stage: ${stage.name})`);
+                controlValve(true, `Moisture ${avgMoisture.toFixed(1)}% < ${threshold}% (Stage: ${stage.name}, DAS: ${currentDAS})`);
             } else if (avgMoisture >= targetMoisture && relayState) {
                 controlValve(false, `Target moisture ${targetMoisture}% reached`);
             }
@@ -1119,6 +1361,10 @@
 
         function toggleMode() {
             autoMode = !autoMode;
+            
+            // Save to localStorage
+            localStorage.setItem('autoMode', autoMode ? 'true' : 'false');
+            
             const btn = document.getElementById('modeToggle');
             if (autoMode) {
                 btn.className = 'mode-toggle auto';
@@ -1350,8 +1596,8 @@
                 timestamp,
                 topic,
                 value: payload.value,
-                stage: GROWTH_STAGES[currentStageIndex].name,
-                day: currentDay
+                stage: sowingDate ? GROWTH_STAGES[currentStageIndex].name : 'N/A',
+                das: sowingDate ? currentDAS : 'N/A'
             };
 
             sensorData.push(logEntry);
@@ -1364,9 +1610,9 @@
                 return;
             }
 
-            let csv = 'Timestamp,Sensor,Value,Growth Stage,Day\n';
+            let csv = 'Timestamp,Sensor,Value,Growth Stage,DAS,Sowing Date\n';
             sensorData.forEach(entry => {
-                csv += `"${entry.timestamp}","${entry.topic}",${entry.value},"${entry.stage}",${entry.day}\n`;
+                csv += `"${entry.timestamp}","${entry.topic}",${entry.value},"${entry.stage}",${entry.das},"${sowingDate || 'N/A'}"\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1388,8 +1634,9 @@
 
             const exportData = {
                 exportDate: new Date().toISOString(),
-                currentStage: GROWTH_STAGES[currentStageIndex],
-                currentDay: currentDay,
+                sowingDate: sowingDate,
+                currentDAS: currentDAS,
+                currentStage: sowingDate ? GROWTH_STAGES[currentStageIndex] : null,
                 totalIrrigations: irrigationCount,
                 data: sensorData
             };
@@ -1432,3 +1679,4 @@
     </script>
 </body>
 </html>
+
